@@ -3,9 +3,11 @@ import { checkRatelimit } from './check-ratelimit';
 
 export const middleware = async (request: NextRequest) => {
   // Check rate limits
-  await checkRatelimit(request);
+  if (request.nextUrl.pathname.startsWith('/api/flags')) {
+    return checkRatelimit(request);
+  }
 
-  // Run the route handler
+  // Pass through
   return NextResponse.next();
 };
 

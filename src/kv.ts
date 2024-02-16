@@ -11,25 +11,9 @@ export type Flag = {
 
 export type Flags = Flag[];
 
-export type RateLimit = {
-  /**
-   * Number of requests allowed
-   */
-  limit: number;
-  /**
-   * Number of requests remaining
-   */
-  remaining: number;
-  /**
-   * Unix timestamp
-   */
-  reset: string;
-};
-
 export type AccountType = 'free' | 'premium';
 
 export type ClientData = {
-  rateLimit: RateLimit;
   accountType: AccountType;
 };
 

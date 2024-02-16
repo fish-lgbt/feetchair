@@ -5,11 +5,6 @@ import type { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-/**
- * One hour in milliseconds
- */
-const ONE_HOUR = 60 * 60 * 1000;
-
 // Lookup account data
 export async function GET(request: NextRequest) {
   // Validate client
@@ -21,18 +16,10 @@ export async function GET(request: NextRequest) {
 
   // Get client's rate limit and other data
   const clientData = await fetchFromKv(`${clientId}:client-data`, {
-    rateLimit: { limit: 100, remaining: 100, reset: new Date(Date.now() + ONE_HOUR).toISOString() },
     accountType: 'free',
   });
 
-  return new Response(JSON.stringify(clientData), {
-    headers: {
-      'Content-Type': 'application/json',
-      'x-rate-limit-limit': clientData.rateLimit.limit.toString(),
-      'x-rate-limit-remaining': clientData.rateLimit.remaining.toString(),
-      'x-rate-limit-reset': clientData.rateLimit.reset,
-    },
-  });
+  return new Response(JSON.stringify(clientData));
 }
 
 // Register account
@@ -42,7 +29,6 @@ export async function POST(request: NextRequest) {
 
   // Save client data
   await putInKv(`${clientId}:client-data`, {
-    rateLimit: { limit: 1000, remaining: 1000, reset: new Date(Date.now() + ONE_HOUR).toISOString() },
     accountType: 'free' as AccountType,
   });
 

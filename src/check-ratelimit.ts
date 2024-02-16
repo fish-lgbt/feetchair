@@ -1,30 +1,64 @@
-import { NextRequest } from 'next/server';
-import { fetchFromKv, putInKv } from './kv';
+import { NextRequest, NextResponse } from 'next/server';
+import { fetchFromKv } from './kv';
 
-const ONE_HOUR = 60 * 60 * 1000;
+const namespace = process.env.RLIMIT_NAMESPACE_ID;
+
+const getTimeAtNextHour = () => {
+  const now = new Date();
+  now.setHours(now.getHours() + 1);
+  now.setMinutes(0);
+  now.setSeconds(0);
+  now.setMilliseconds(0);
+  return now;
+};
+
+const accountTypeToQuota = (accountType: string) => {
+  switch (accountType) {
+    case 'free':
+      return 100;
+    case 'pro':
+      return 1_000;
+    case 'enterprise':
+      return 10_000;
+    case 'unlimited':
+      return 1_000_000;
+    default:
+      return 100;
+  }
+};
+
+type Limit = {
+  ok: boolean;
+  status: number;
+  remaining: number;
+};
 
 export const checkRatelimit = async (request: NextRequest) => {
   const clientId = request.headers.get('x-client-id');
   if (!clientId) return new Response('Client ID is required', { status: 400 });
 
-  // Get client's rate limit
-  const clientData = await fetchFromKv(`${clientId}:client-data`, {
-    rateLimit: { limit: 100, remaining: 100, reset: new Date(Date.now() + ONE_HOUR).toISOString() },
-    accountType: 'free',
-  });
+  // Fetch the user's plan
+  const clientData = await fetchFromKv(`${clientId}:client-data`);
+  const quota = accountTypeToQuota(clientData.accountType);
 
-  // If it's been more than the reset time, reset the rate limit
-  if (new Date(clientData.rateLimit.reset) < new Date()) {
-    clientData.rateLimit.remaining = clientData.rateLimit.limit;
-    clientData.rateLimit.reset = new Date(Date.now() + ONE_HOUR).toISOString();
-  }
+  // Fetch the rate limit
+  const response = await fetch(`https://rlimit.com/${namespace}/${quota}/1h/${clientId}`);
+  const limit = (await response.json()) as Limit;
+  const headers = {
+    'x-ratelimit-remaining': limit.remaining.toString(),
+    'x-ratelimit-reset': getTimeAtNextHour().toISOString(),
+  };
 
   // If the rate limit is exceeded, return a 429
-  if (clientData.rateLimit.remaining <= 0) return new Response('Rate limit exceeded', { status: 429 });
+  if (!response.ok) {
+    return new Response(null, {
+      status: limit.status,
+      headers,
+    });
+  }
 
-  // Decrement the rate limit
-  clientData.rateLimit.remaining--;
-
-  // Save the updated rate limit
-  await putInKv(`${clientId}:client-data`, clientData);
+  // If the rate limit is not exceeded, add the headers and pass through
+  return NextResponse.next({
+    headers,
+  });
 };
