@@ -1,4 +1,4 @@
-import { fetchFromKv } from '@/kv';
+import { Flag, fetchFromKv, putInKv } from '@/kv';
 import { validateClient } from '@/validate-client';
 import type { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     id,
     ...result.data,
   });
-  await process.env.feetchair.put(`${clientId}:flags`, JSON.stringify(flags));
+  await putInKv(`${clientId}:flags`, flags);
   return new Response(
     JSON.stringify({
       id,
@@ -70,7 +70,7 @@ export async function DELETE(request: NextRequest, body: { id: string }) {
   // Remove flag
   const flags = await getFlags(clientId);
   const newFlags = flags.filter((flag) => flag.id !== body.id);
-  await process.env.feetchair.put(`${clientId}:flags`, JSON.stringify(newFlags));
+  await putInKv(`${clientId}:flags`, newFlags);
   return new Response(null, {
     status: 204,
   });
@@ -84,10 +84,26 @@ export async function PUT(request: NextRequest, body: { id: string; name: string
   if (!clientId) return new Response('Client ID is required', { status: 400 });
   if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+  // Validate body
+  const result = Body.safeParse(await request.json());
+  if (!result.success) {
+    const validationError = fromZodError(result.error);
+    return new Response(validationError.toString(), { status: 400 });
+  }
+
   // Update flag
   const flags = await getFlags(clientId);
-  const newFlags = flags.map((flag) => (flag.id === body.id ? body : flag));
-  await process.env.feetchair.put(`${clientId}:flags`, JSON.stringify(newFlags));
+  const newFlags = flags.map((flag) =>
+    flag.id === body.id
+      ? {
+          id: body.id,
+          name: body.name,
+          description: body.description,
+          enabled: body.enabled,
+        }
+      : flag,
+  );
+  await putInKv(`${clientId}:flags`, newFlags);
   return new Response(null, {
     status: 204,
   });
