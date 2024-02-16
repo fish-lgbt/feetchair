@@ -47,16 +47,13 @@ export async function POST(request: NextRequest) {
   // Add flag
   const flags = await getFlags(clientId);
   const id = crypto.randomUUID();
-  flags.push({
+  const flag = {
     id,
     ...result.data,
-  });
+  };
+  flags.push(flag);
   await putInKv(`${clientId}:flags`, flags);
-  return new Response(
-    JSON.stringify({
-      id,
-    }),
-  );
+  return new Response(JSON.stringify(flag));
 }
 
 export async function DELETE(request: NextRequest, body: { id: string }) {
