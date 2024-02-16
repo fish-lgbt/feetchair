@@ -6,8 +6,9 @@ declare global {
       //
       // KV Example:
       // MY_KV: KVNamespace
+      feetchair: KVNamespace;
     }
   }
 }
 
-export {}
+export {};
