@@ -95,7 +95,12 @@ export async function PUT(request: NextRequest) {
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
     // Parse body
-    const { id, ...body } = (await request.json()) as Flag;
+    const { id: flagId, ...body } = (await request.json()) as Flag;
+
+    // Check we have a flag with that ID
+    const flags = await getFlags(clientId);
+    const flag = flags.find((flag) => flag.id === flagId);
+    if (!flag) return new Response('Flag not found', { status: 404 });
 
     // Validate body
     const result = Body.safeParse({
@@ -107,18 +112,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update flag
-    const flags = await getFlags(clientId);
-    const newFlags = flags.map((flag) =>
-      flag.id === id
-        ? {
-            id,
-            name: body.name,
-            description: body.description,
-            enabled: body.enabled,
-          }
-        : flag,
-    );
-    await putInKv(`${clientId}:flags`, newFlags);
+    const flagIndex = flags.indexOf(flag);
+    flags[flagIndex] = {
+      id: flagId,
+      ...result.data,
+    };
+
+    // Save flags
+    await putInKv(`${clientId}:flags`, flags);
     return new Response(null, {
       status: 204,
     });
