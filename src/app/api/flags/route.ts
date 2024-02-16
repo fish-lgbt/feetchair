@@ -11,16 +11,20 @@ const getFlags = async (clientId: string) => {
 };
 
 export async function GET(request: NextRequest) {
-  // Validate client
-  const clientId = request.headers.get('x-client-id');
-  const clientSecret = request.headers.get('x-client-secret');
-  if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
-  if (!clientId) return new Response('Client ID is required', { status: 400 });
-  if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
+  try {
+    // Validate client
+    const clientId = request.headers.get('x-client-id');
+    const clientSecret = request.headers.get('x-client-secret');
+    if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
+    if (!clientId) return new Response('Client ID is required', { status: 400 });
+    if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
-  // Get flags
-  const flags = await getFlags(clientId);
-  return new Response(JSON.stringify(flags));
+    // Get flags
+    const flags = await getFlags(clientId);
+    return new Response(JSON.stringify(flags));
+  } catch (error: unknown) {
+    return new Response((error as Error).message, { status: 500 });
+  }
 }
 
 const Body = z.object({
@@ -30,80 +34,97 @@ const Body = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // Validate client
-  const clientId = request.headers.get('x-client-id');
-  const clientSecret = request.headers.get('x-client-secret');
-  if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
-  if (!clientId) return new Response('Client ID is required', { status: 400 });
-  if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
+  try {
+    // Validate client
+    const clientId = request.headers.get('x-client-id');
+    const clientSecret = request.headers.get('x-client-secret');
+    if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
+    if (!clientId) return new Response('Client ID is required', { status: 400 });
+    if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
-  // Validate body
-  const result = Body.safeParse(await request.json());
-  if (!result.success) {
-    const validationError = fromZodError(result.error);
-    return new Response(validationError.toString(), { status: 400 });
+    // Validate body
+    const result = Body.safeParse(await request.json());
+    if (!result.success) {
+      const validationError = fromZodError(result.error);
+      return new Response(validationError.toString(), { status: 400 });
+    }
+
+    // Add flag
+    const flags = await getFlags(clientId);
+    const id = crypto.randomUUID();
+    const flag = {
+      id,
+      ...result.data,
+    };
+    flags.push(flag);
+    await putInKv(`${clientId}:flags`, flags);
+    return new Response(JSON.stringify(flag));
+  } catch (error: unknown) {
+    return new Response((error as Error).message, { status: 500 });
   }
-
-  // Add flag
-  const flags = await getFlags(clientId);
-  const id = crypto.randomUUID();
-  const flag = {
-    id,
-    ...result.data,
-  };
-  flags.push(flag);
-  await putInKv(`${clientId}:flags`, flags);
-  return new Response(JSON.stringify(flag));
 }
 
 export async function DELETE(request: NextRequest, body: { id: string }) {
-  // Validate client
-  const clientId = request.headers.get('x-client-id');
-  const clientSecret = request.headers.get('x-client-secret');
-  if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
-  if (!clientId) return new Response('Client ID is required', { status: 400 });
-  if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
+  try {
+    // Validate client
+    const clientId = request.headers.get('x-client-id');
+    const clientSecret = request.headers.get('x-client-secret');
+    if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
+    if (!clientId) return new Response('Client ID is required', { status: 400 });
+    if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
-  // Remove flag
-  const flags = await getFlags(clientId);
-  const newFlags = flags.filter((flag) => flag.id !== body.id);
-  await putInKv(`${clientId}:flags`, newFlags);
-  return new Response(null, {
-    status: 204,
-  });
+    // Remove flag
+    const flags = await getFlags(clientId);
+    const newFlags = flags.filter((flag) => flag.id !== body.id);
+    await putInKv(`${clientId}:flags`, newFlags);
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error: unknown) {
+    return new Response((error as Error).message, { status: 500 });
+  }
 }
 
-export async function PUT(request: NextRequest, body: { id: string; name: string; description: string; enabled: boolean }) {
-  // Validate client
-  const clientId = request.headers.get('x-client-id');
-  const clientSecret = request.headers.get('x-client-secret');
-  if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
-  if (!clientId) return new Response('Client ID is required', { status: 400 });
-  if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
+export async function PUT(request: NextRequest) {
+  try {
+    // Validate client
+    const clientId = request.headers.get('x-client-id');
+    const clientSecret = request.headers.get('x-client-secret');
+    if (!clientSecret) return new Response('Client Secret is required', { status: 400 });
+    if (!clientId) return new Response('Client ID is required', { status: 400 });
+    if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
-  // Validate body
-  const result = Body.safeParse(await request.json());
-  if (!result.success) {
-    const validationError = fromZodError(result.error);
-    return new Response(validationError.toString(), { status: 400 });
+    // Parse body
+    const { id, ...body } = (await request.json()) as Flag;
+
+    // Validate body
+    const result = Body.safeParse({
+      ...body,
+    });
+    if (!result.success) {
+      const validationError = fromZodError(result.error);
+      return new Response(validationError.toString(), { status: 400 });
+    }
+
+    // Update flag
+    const flags = await getFlags(clientId);
+    const newFlags = flags.map((flag) =>
+      flag.id === id
+        ? {
+            id,
+            name: body.name,
+            description: body.description,
+            enabled: body.enabled,
+          }
+        : flag,
+    );
+    await putInKv(`${clientId}:flags`, newFlags);
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error: unknown) {
+    return new Response((error as Error).message, { status: 500 });
   }
-
-  // Update flag
-  const flags = await getFlags(clientId);
-  const newFlags = flags.map((flag) =>
-    flag.id === body.id
-      ? {
-          id: body.id,
-          name: body.name,
-          description: body.description,
-          enabled: body.enabled,
-        }
-      : flag,
-  );
-  await putInKv(`${clientId}:flags`, newFlags);
-  return new Response(null, {
-    status: 204,
-  });
 }
 
 export async function OPTIONS() {
