@@ -20,6 +20,7 @@ export type ClientData = {
 export type Keys = {
   auth: Auth;
   flags: Flags;
+  [key: `flags:${string}`]: Flags;
   'client-data': ClientData;
 };
 

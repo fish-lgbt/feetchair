@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRatelimit } from './check-ratelimit';
+import { checkRatelimit } from './common/check-ratelimit';
 
 export const middleware = async (request: NextRequest) => {
   // Check rate limits

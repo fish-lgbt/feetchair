@@ -1,12 +1,11 @@
-import { Flag, fetchFromKv, putInKv } from '@/kv';
-import { validateClient } from '@/validate-client';
+import { getFlags } from '@/common/get-flags';
+import { putInKv } from '@/common/kv';
+import { validateClient } from '@/common/validate-client';
 import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 
 export const runtime = 'edge';
-
-const getFlags = async (clientId: string) => await fetchFromKv(`${clientId}:flags`, []);
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,8 +16,11 @@ export async function GET(request: NextRequest) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Get identity
+    const identity = request.headers.get('x-identity') ?? null;
+
     // Get flags
-    const flags = await getFlags(clientId);
+    const flags = await getFlags(clientId, identity);
     return new Response(JSON.stringify(flags));
   } catch (error: unknown) {
     return new Response((error as Error).message, { status: 500 });
@@ -40,6 +42,9 @@ export async function POST(request: NextRequest) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Get identity
+    const identity = request.headers.get('x-identity') ?? null;
+
     // Validate body
     const result = Body.safeParse(await request.json());
     if (!result.success) {
@@ -48,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add flag
-    const flags = await getFlags(clientId);
+    const flags = await getFlags(clientId, identity);
     const id = crypto.randomUUID();
     const flag = {
       id,

@@ -1,6 +1,6 @@
-import { AccountType, fetchFromKv, putInKv } from '@/kv';
-import { hashSecret } from '@/hash-secret';
-import { validateClient } from '@/validate-client';
+import { AccountType, fetchFromKv, putInKv } from '@/common/kv';
+import { hashSecret } from '@/common/hash-secret';
+import { validateClient } from '@/common/validate-client';
 import type { NextRequest } from 'next/server';
 
 export const runtime = 'edge';

@@ -1,5 +1,6 @@
-import { Flag, fetchFromKv, putInKv } from '@/kv';
-import { validateClient } from '@/validate-client';
+import { getFlags } from '@/common/get-flags';
+import { Flag, putInKv } from '@/common/kv';
+import { validateClient } from '@/common/validate-client';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
@@ -9,8 +10,6 @@ type Context = {
     flag: string;
   };
 };
-
-const getFlags = async (clientId: string) => await fetchFromKv(`${clientId}:flags`, []);
 
 const Body = z.object({
   name: z.string(),
@@ -29,12 +28,15 @@ export async function GET(request: NextRequest, context: Context) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Get identity
+    const identity = request.headers.get('x-identity') ?? null;
+
     // Get flag ID
     const flagId = context.params.flag;
     if (!flagId) return new Response('Flag ID is required', { status: 400 });
 
     // Get a single flag
-    const flags = await getFlags(clientId);
+    const flags = await getFlags(clientId, identity);
     const flag = flags.find((flag) => flag.id === flagId);
     if (!flag) return new Response('Flag not found', { status: 404 });
 
@@ -53,14 +55,24 @@ export async function DELETE(request: NextRequest, context: Context) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Get identity
+    const identity = request.headers.get('x-identity') ?? null;
+
     // Get flag ID
     const flagId = context.params.flag;
     if (!flagId) return new Response('Flag ID is required', { status: 400 });
 
     // Remove flag
-    const flags = await getFlags(clientId);
+    const flags = await getFlags(clientId, identity);
     const newFlags = flags.filter((flag) => flag.id !== flagId);
-    await putInKv(`${clientId}:flags`, newFlags);
+
+    // Save flags
+    if (identity) {
+      await putInKv(`${clientId}:flags:${identity}`, newFlags);
+    } else {
+      await putInKv(`${clientId}:flags`, newFlags);
+    }
+
     return new Response(null, {
       status: 204,
     });
@@ -78,6 +90,9 @@ export async function PUT(request: NextRequest, context: Context) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Get identity
+    const identity = request.headers.get('x-identity') ?? null;
+
     // Get flag ID
     const flagId = context.params.flag;
     if (!flagId) return new Response('Flag ID is required', { status: 400 });
@@ -86,7 +101,7 @@ export async function PUT(request: NextRequest, context: Context) {
     const body = (await request.json()) as Flag;
 
     // Check we have a flag with that ID
-    const flags = await getFlags(clientId);
+    const flags = await getFlags(clientId, identity);
     const flagIndex = flags.findIndex((flag) => flag.id === flagId);
     if (flagIndex === -1) return new Response('Flag not found', { status: 404 });
 
@@ -104,7 +119,12 @@ export async function PUT(request: NextRequest, context: Context) {
     };
 
     // Save flags
-    await putInKv(`${clientId}:flags`, flags);
+    if (identity) {
+      await putInKv(`${clientId}:flags:${identity}`, flags);
+    } else {
+      await putInKv(`${clientId}:flags`, flags);
+    }
+
     return new Response(null, {
       status: 204,
     });
