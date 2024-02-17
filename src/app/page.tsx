@@ -51,8 +51,8 @@ const tabs = {
         # Make the POST request to create a new flag
         curl -X POST https://feetchair.fish.lgbt/api/flag \
              -H "Content-Type: application/json" \
-             -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
-             -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET" \
+             -H "x-client-id: $FEETCHAIR_CLIENT_ID" \
+             -H "x-client-secret: $FEETCHAIR_CLIENT_SECRET" \
              -d '{"name": "feature-flag", "description": "A new feature flag", "enabled": true}' 
       `,
     },
@@ -62,8 +62,8 @@ const tabs = {
       code: dedent`
         # Make the GET request to retrieve all flags
         curl -X GET https://feetchair.fish.lgbt/api/flags \
-             -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
-             -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET"
+             -H "x-client-id: $FEETCHAIR_CLIENT_ID" \
+             -H "x-client-secret: $FEETCHAIR_CLIENT_SECRET"
       `,
     },
     {
@@ -72,8 +72,8 @@ const tabs = {
       code: dedent`
         # Make the GET request to retrieve a single flag
         curl -X GET https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
-             -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
-             -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET"
+             -H "x-client-id: $FEETCHAIR_CLIENT_ID" \
+             -H "x-client-secret: $FEETCHAIR_CLIENT_SECRET"
       `,
     },
     {
@@ -83,8 +83,8 @@ const tabs = {
         # Make the PUT request to update a flag
         curl -X PUT https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
              -H "Content-Type: application/json" \
-             -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
-             -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET" \
+             -H "x-client-id: $FEETCHAIR_CLIENT_ID" \
+             -H "x-client-secret: $FEETCHAIR_CLIENT_SECRET" \
              -d '{"name": "feature-flag", "description": "A new feature flag", "enabled": false}' 
       `,
     },
@@ -94,93 +94,107 @@ const tabs = {
       code: dedent`
         # Make the DELETE request to delete a flag
         curl -X DELETE https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
-             -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
-             -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET"
+             -H "x-client-id: $FEETCHAIR_CLIENT_ID" \
+             -H "x-client-secret: $FEETCHAIR_CLIENT_SECRET"
       `,
     },
   ],
-  // js: [
-  //   {
-  //     title: 'Create a new client',
-  //     language: 'js',
-  //     code: dedent`
-  //       const client = fetch('https://feetchair.fish.lgbt/api/client', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         },
-  //       });
-  //       console.info('Client ID:', client.clientId); // 123e4567-e89b-12d3-a456-426614174000
-  //       console.info('Client Secret:', client.clientSecret); // 7afd0a52-e637-465e-91eb-d58875aa6c0a
-  //     `,
-  //   },
-  //   {
-  //     title: 'Create a flag',
-  //     language: 'js',
-  //     code: dedent`
-  //       const flag = fetch('https://feetchair.fish.lgbt/api/flag', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Client-Id': '123e4567-e89b-12d3-a456-426614174000',
-  //           'Client-Secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
-  //         },
-  //         body: JSON.stringify({
-  //           name: 'feature-flag',
-  //           description: 'A new feature flag',
-  //           active: true,
-  //         }),
-  //       });
-  //       console.info('Flag ID:', flag.id); // 123e4567-e89b-12d3-a456-426614174000
-  //     `,
-  //   },
-  //   {
-  //     title: 'Get all flags',
-  //     language: 'js',
-  //     code: dedent`
-  //       const flags = fetch('https://feetchair.fish.lgbt/api/flags', {
-  //         headers: {
-  //           'Client-Id': '123e4567-e89b-12d3-a456-426614174000',
-  //           'Client-Secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
-  //         },
-  //       });
-  //       console.info('Flags:', flags);
-  //     `,
-  //   },
-  //   {
-  //     title: 'Get a single flag',
-  //     language: 'js',
-  //     code: dedent`
-  //       const flag = fetch('https://feetchair.fish.lgbt/api/flags/feature-flag', {
-  //         headers: {
-  //           'Client-Id': '123e4567-e89b-12d3-a456-426614174000',
-  //           'Client-Secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
-  //         },
-  //       });
-  //       console.info('Flag:', flag);
-  //     `,
-  //   },
-  //   {
-  //     title: 'Update a flag',
-  //     language: 'js',
-  //     code: dedent`
-  //       const flag = fetch('https://feetchair.fish.lgbt/api/flags/feature-flag', {
-  //         method: 'PUT',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Client-Id': '123e4567-e89b-12d3-a456-426614174000',
-  //           'Client-Secret': '7afd0-a52-e637-465e-91eb-d58875aa6c0a',
-  //         },
-  //         body: JSON.stringify({
-  //           name: 'feature-flag',
-  //           description: 'A new feature flag',
-  //           active: false,
-  //         }),
-  //       });
-  //       console.info('Flag:', flag);
-  //     `,
-  //   },
-  // ],
+  js: [
+    {
+      title: 'Create a new client',
+      language: 'js',
+      code: dedent`
+        const client = fetch('https://feetchair.fish.lgbt/api/client', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        }).then(response => response.json());
+        console.info('Client ID:', client.clientId); // 123e4567-e89b-12d3-a456-426614174000
+        console.info('Client Secret:', client.clientSecret); // 7afd0a52-e637-465e-91eb-d58875aa6c0a
+      `,
+    },
+    {
+      title: 'Create a flag',
+      language: 'js',
+      code: dedent`
+        const flag = fetch('https://feetchair.fish.lgbt/api/flag', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client-id': '123e4567-e89b-12d3-a456-426614174000',
+            'x-client-secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
+          },
+          body: JSON.stringify({
+            name: 'feature-flag',
+            description: 'A new feature flag',
+            active: true,
+          }),
+        }).then(response => response.json());
+        console.info('Flag ID:', flag.id); // 123e4567-e89b-12d3-a456-426614174000
+      `,
+    },
+    {
+      title: 'Get all flags',
+      language: 'js',
+      code: dedent`
+        const flags = fetch('https://feetchair.fish.lgbt/api/flags', {
+          headers: {
+            'x-client-id': '123e4567-e89b-12d3-a456-426614174000',
+            'x-client-secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
+          },
+        }).then(response => response.json());
+        console.info('Flags:', flags); // [{ id: '123e4567-e89b-12d3-a456-426614174000', name: 'feature-flag', description: 'A new feature flag', enabled: true }]
+      `,
+    },
+    {
+      title: 'Get a single flag',
+      language: 'js',
+      code: dedent`
+        const flag = fetch('https://feetchair.fish.lgbt/api/flags/feature-flag', {
+          headers: {
+            'x-client-id': '123e4567-e89b-12d3-a456-426614174000',
+            'x-client-secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
+          },
+        }).then(response => response.json());
+        console.info('Flag:', flag); // { id: '123e4567-e89b-12d3-a456-426614174000', name: 'feature-flag', description: 'A new feature flag', enabled: true }
+      `,
+    },
+    {
+      title: 'Update a flag',
+      language: 'js',
+      code: dedent`
+        const flag = fetch('https://feetchair.fish.lgbt/api/flags/feature-flag', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client-id': '123e4567-e89b-12d3-a456-426614174000',
+            'x-client-secret': '7afd0-a52-e637-465e-91eb-d58875aa6c0a',
+          },
+          body: JSON.stringify({
+            name: 'feature-flag',
+            description: 'A new feature flag',
+            active: false,
+          }),
+        });
+        console.info('Flag:', flag.ok); // true
+      `,
+    },
+    {
+      title: 'Delete a flag',
+      language: 'js',
+      code: dedent`
+        const flag = fetch('https://feetchair.fish.lgbt/api/flags/feature-flag', {
+          method: 'DELETE',
+          headers: {
+            'x-client-id': '123e4567-e89b-12d3-a456-426614174000',
+            'x-client-secret': '7afd0a52-e637-465e-91eb-d58875aa6c0a',
+          },
+        }).then(response => response.json());
+        console.info('Flag:', flag.ok); // true
+      `,
+    },
+  ],
   // php: [
   //   {
   //     title: 'Create a new client',
@@ -216,8 +230,8 @@ const tabs = {
   //           'header'  => "Content-type: application/json",
   //           'method'  => 'POST',
   //           'content' => json_encode($data),
-  //           'header' => "Client-Id: 123e4567-e89b-12d3-a456-426614174000",
-  //           'header' => "Client-Secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
+  //           'header' => "x-client-id: 123e4567-e89b-12d3-a456-426614174000",
+  //           'header' => "x-client-secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
   //         ),
   //       );
   //       $context  = stream_context_create($options);
@@ -235,8 +249,8 @@ const tabs = {
   //     code: dedent`
   //       $options = array(
   //         'http' => array(
-  //           'header'  => "Client-Id: 123e4567-e89b-12d3-a456-426614174000",
-  //           'header'  => "Client-Secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
+  //           'header'  => "x-client-id: 123e4567-e89b-12d3-a456-426614174000",
+  //           'header'  => "x-client-secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
   //         ),
   //       );
   //       $context  = stream_context_create($options);
@@ -254,8 +268,8 @@ const tabs = {
   //     code: dedent`
   //       $options = array(
   //         'http' => array(
-  //           'header'  => "Client-Id: 123e4567-e89b-12d3-a456-426614174000",
-  //           'header'  => "Client-Secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
+  //           'header'  => "x-client-id: 123e4567-e89b-12d3-a456-426614174000",
+  //           'header'  => "x-client-secret: 7afd0a52-e637-465e-91eb-d58875aa6c0a",
   //         ),
   //       );
   //       $context  = stream_context_create($options);
@@ -309,8 +323,8 @@ const tabs = {
   //     uri = URI.parse('https://feetchair.fish.lgbt/api/flag')
   //     request = Net::HTTP::Post.new(uri)
   //     request.content_type = 'application/json'
-  //     request['Client-Id'] = '123e4567-e89b-12d3-a456-426614174000'
-  //     request['Client-Secret'] = '7afd0a52-e637-465e-91eb-d58875aa6c0a'
+  //     request['x-client-id'] = '123e4567-e89b-12d3-a456-426614174000'
+  //     request['x-client-secret'] = '7afd0a52-e637-465e-91eb-d58875aa6c0a'
   //     request.body = JSON.dump({
   //       name: 'feature-flag',
   //       description: 'A new feature flag',
@@ -343,8 +357,8 @@ const tabs = {
 
   //     uri = URI.parse('https://feetchair.fish.lgbt/api/flags')
   //     request = Net::HTTP::Get.new(uri)
-  //     request['Client-Id'] = '123e4567-e89b-12d3-a456-426614174000'
-  //     request['Client-Secret'] = '7afd0a52-e637-465e-91eb-d58875aa6c0a'
+  //     request['x-client-id'] = '123e4567-e89b-12d3-a456-426614174000'
+  //     request['x-client-secret'] = '7afd0a52-e637-465e-91eb-d58875aa6c0a'
 
   //     req_options = {
   //       use_ssl: uri.scheme == 'https',
