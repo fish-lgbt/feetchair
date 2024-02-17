@@ -53,7 +53,7 @@ const tabs = {
              -H "Content-Type: application/json" \
              -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
              -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET" \
-             -d '{"name": "feature-flag", "description": "A new feature flag", "active": true}' 
+             -d '{"name": "feature-flag", "description": "A new feature flag", "enabled": true}' 
       `,
     },
     {
@@ -85,7 +85,7 @@ const tabs = {
              -H "Content-Type: application/json" \
              -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
              -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET" \
-             -d '{"name": "feature-flag", "description": "A new feature flag", "active": false}' 
+             -d '{"name": "feature-flag", "description": "A new feature flag", "enabled": false}' 
       `,
     },
     {
