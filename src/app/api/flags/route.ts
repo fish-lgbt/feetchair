@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest, body: { id: string }) {
+export async function DELETE(request: NextRequest) {
   try {
     // Validate client
     const clientId = request.headers.get('x-client-id');
@@ -73,9 +73,12 @@ export async function DELETE(request: NextRequest, body: { id: string }) {
     if (!clientId) return new Response('Client ID is required', { status: 400 });
     if (!(await validateClient(clientId, clientSecret))) return new Response('Invalid client', { status: 401 });
 
+    // Parse body
+    const { id: flagId } = (await request.json()) as Flag;
+
     // Remove flag
     const flags = await getFlags(clientId);
-    const newFlags = flags.filter((flag) => flag.id !== body.id);
+    const newFlags = flags.filter((flag) => flag.id !== flagId);
     await putInKv(`${clientId}:flags`, newFlags);
     return new Response(null, {
       status: 204,
