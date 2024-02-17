@@ -71,7 +71,7 @@ const tabs = {
       language: 'bash',
       code: dedent`
         # Make the GET request to retrieve a single flag
-        curl -X GET https://feetchair.fish.lgbt/api/flags/feature-flag \
+        curl -X GET https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
              -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
              -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET"
       `,
@@ -81,7 +81,7 @@ const tabs = {
       language: 'bash',
       code: dedent`
         # Make the PUT request to update a flag
-        curl -X PUT https://feetchair.fish.lgbt/api/flags/feature-flag \
+        curl -X PUT https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
              -H "Content-Type: application/json" \
              -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
              -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET" \
@@ -93,7 +93,7 @@ const tabs = {
       language: 'bash',
       code: dedent`
         # Make the DELETE request to delete a flag
-        curl -X DELETE https://feetchair.fish.lgbt/api/flags/feature-flag \
+        curl -X DELETE https://feetchair.fish.lgbt/api/flags/123e4567-e89b-12d3-a456-426614174000 \
              -H "Client-Id: $FEETCHAIR_CLIENT_ID" \
              -H "Client-Secret: $FEETCHAIR_CLIENT_SECRET"
       `,
